@@ -194,7 +194,7 @@ int memcached_backend__exists(git_odb_backend *_backend, const git_oid *oid)
 	return found;
 }
 
-int memcached_backend__write(git_oid *oid, git_odb_backend *_backend, const void *data, size_t len, git_otype type)
+int memcached_backend__write(git_odb_backend *_backend, git_oid *oid, const void *data, size_t len, git_otype type)
 {
 	memcached_backend *backend;
 	memcached_return ret = 0;

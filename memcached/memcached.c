@@ -27,7 +27,8 @@
 #include <string.h>
 
 #include <git2.h>
-#include "git2/odb_backend.h"
+#include <git2/errors.h>
+#include <git2/sys/odb_backend.h>
 #include <libmemcached/memcached.h>
 
 typedef struct {
@@ -78,11 +79,11 @@ int memcached_backend__read_header(size_t *len_p, git_otype *type_p, git_odb_bac
 
 	type_key = memcached_backend__build_key(oid->id, type_suffix, &type_key_len);
 	if (type_key == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 	size_key = memcached_backend__build_key(oid->id, size_suffix, &size_key_len);
 	if (size_key == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 
 	memset(type_p, 0, sizeof(type_p));
@@ -102,7 +103,7 @@ int memcached_backend__read_header(size_t *len_p, git_otype *type_p, git_odb_bac
 		status = GIT_ENOTFOUND;
 	} else {
 		*len_p = *size_value;
-		status = GIT_SUCCESS;
+		status = 0;
 	}
 
 read_header_cleanup:
@@ -127,11 +128,11 @@ int memcached_backend__read(void **data_p, size_t *len_p, git_otype *type_p, git
 
 	type_key = memcached_backend__build_key(oid->id, type_suffix, &type_key_len);
 	if (type_key == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 	data_key = memcached_backend__build_key(oid->id, data_suffix, &data_key_len);
 	if (data_key == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 
 	type_buffer = (void *)memcached_get(backend->db, type_key, type_key_len, &type_value_len, &type_flags, &ret);
@@ -152,7 +153,7 @@ int memcached_backend__read(void **data_p, size_t *len_p, git_otype *type_p, git
 		free(type_buffer);
 
 		*data_p = data_buffer;
-		status = GIT_SUCCESS;
+		status = 0;
 	}
 
 read_cleanup:
@@ -176,7 +177,7 @@ int memcached_backend__exists(git_odb_backend *_backend, const git_oid *oid)
 
 	type_key = memcached_backend__build_key(oid->id, type_suffix, &type_key_len);
 	if (type_key == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 	// use the ADD command with a value of zero length to check for the existence of a key
 	// this is because it will let us know if the key already exists
@@ -210,15 +211,15 @@ int memcached_backend__write(git_oid *oid, git_odb_backend *_backend, const void
 
 	type_key = memcached_backend__build_key(oid->id, type_suffix, &type_key_len);
 	if (type_key == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 	size_key = memcached_backend__build_key(oid->id, size_suffix, &size_key_len);
 	if (size_key == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 	data_key = memcached_backend__build_key(oid->id, data_suffix, &data_key_len);
 	if (data_key == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 
 	ret = memcached_set(backend->db, type_key, type_key_len, (const char *)&type, sizeof(type), 0, 0);
@@ -239,7 +240,7 @@ int memcached_backend__write(git_oid *oid, git_odb_backend *_backend, const void
 		goto write_cleanup;
 	}
 
-	status = GIT_SUCCESS;
+	status = 0;
 
 write_cleanup:
 	free(type_key);
@@ -268,7 +269,7 @@ int git_odb_backend_memcached(git_odb_backend **backend_out, const char *host, i
 
 	backend = calloc(1, sizeof (memcached_backend));
 	if (backend == NULL)
-		return GIT_ENOMEM;
+		return GITERR_NOMEMORY;
 
 
 	backend->db = memcached_create(NULL);
@@ -293,7 +294,7 @@ int git_odb_backend_memcached(git_odb_backend **backend_out, const char *host, i
 
 	*backend_out = (git_odb_backend *) backend;
 
-	return GIT_SUCCESS;
+	return 0;
 
 cleanup:
 	free(backend);

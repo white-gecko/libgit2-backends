@@ -103,7 +103,7 @@ int memcached_backend__read_header(size_t *len_p, git_otype *type_p, git_odb_bac
 		status = GIT_ENOTFOUND;
 	} else {
 		*len_p = *size_value;
-		status = 0;
+		status = GIT_OK;
 	}
 
 read_header_cleanup:
@@ -153,7 +153,7 @@ int memcached_backend__read(void **data_p, size_t *len_p, git_otype *type_p, git
 		free(type_buffer);
 
 		*data_p = data_buffer;
-		status = 0;
+		status = GIT_OK;
 	}
 
 read_cleanup:
@@ -240,7 +240,7 @@ int memcached_backend__write(git_odb_backend *_backend, git_oid *oid, const void
 		goto write_cleanup;
 	}
 
-	status = 0;
+	status = GIT_OK;
 
 write_cleanup:
 	free(type_key);
@@ -294,7 +294,7 @@ int git_odb_backend_memcached(git_odb_backend **backend_out, const char *host, i
 
 	*backend_out = (git_odb_backend *) backend;
 
-	return 0;
+	return GIT_OK;
 
 cleanup:
 	free(backend);

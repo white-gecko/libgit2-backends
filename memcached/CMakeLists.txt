@@ -15,5 +15,5 @@ ENDIF ()
 
 # Compile and link LIBGIT2
 INCLUDE_DIRECTORIES(${LIBGIT2_INCLUDE_DIRS} ${LIBMEMCACHED_INCLUDE_DIR})
-ADD_LIBRARY(git2-memcached memcached.c)
+ADD_LIBRARY(git2-memcached memcached.c memcached_backend_adapter.c)
 TARGET_LINK_LIBRARIES(git2-memcached ${LIBGIT2_LIBRARIES} ${LIBMEMCACHED_LIBRARY})
